@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+    <script src="https://unpkg.com/vue-select@3.0.0"></script>
+    <link rel="stylesheet" href="https://unpkg.com/vue-select@3.0.0/dist/vue-select.css">
 
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     
@@ -20,6 +22,29 @@
     </script>
 
     <style>
+      
+      
+      img:hover {
+        transform: scale(2) translate(0, 0);
+        z-index: 1;
+      }
+      .search {
+        padding: 0 5px 0 5px;
+      }
+      .pagination .page-item {
+        cursor: pointer;
+      }
+      .pagination .page-item.disabled {
+        cursor: auto;
+      }
+      .page-buttons a {
+        cursor: pointer;
+      }
+      .page-buttons a.disabled {
+        cursor: auto;
+      }
+
+
     </style>
 
     <title>MTG Card Search</title>
@@ -28,57 +53,89 @@
 
   <body>
     <div id="app">
-      <select v-model="params.set">
-          <option disabled value="">Select a set</option>
-          <option value="eld">Thrones of Eldraine</option>
-          <option value="m20">Core Set 2020</option>
-          <option value="war">War of the Spark</option>
-        </select>
-      </select>
-      <select v-model="params.color">
-          <option disabled value="">Select a color</option>
-          <option value="red">Red</option>
-          <option value="black">Black</option>
-          <option value="blue">Blue</option>
-        </select>
-      </select>
-      <button v-on:click="pullCards()">Submit</button>
+
+      <div class="container">
+        <div class="row py-4">
+          <div class="col-md-6 col-s-12">
+            <span class="h2">Magic: The Gathering Card Search</span>
+          </div>
+          <div class="col-md-3 search">
+            <v-select label="name" :options="setList" :clearable="false" v-model="params.set"></v-select>
+          </div>
+          <div class="col-md-2 search">
+            <v-select label="name" :options="colorList" :clearable="false" v-model="params.color"></v-select>
+          </div>
+          <div class="col-md-1 search">
+            <button v-on:click="pullCards()">Submit</button>
+          </div>
+        </div>
+      </div>
 
       <div v-show="loading == false">
 
-        <button :disabled="page == 0" v-on:click="prevPage()">Previous</button>
-        <span>{{ page+1 }}/{{ Math.ceil(cards.length/pageLimit) }}</span>
-        <button :disabled="(page+1)*pageLimit >= cards.length" v-on:click="nextPage()">Next</button>
+        <div v-show="cards.length > 20">
+          <nav aria-label="page navigation">
+            <ul class="pagination justify-content-center">
+              <li class="page-item" :class="{ disabled : page == 0 }">
+                <a class="page-link" v-on:click="prevPage()">Previous</a>
+              </li>
+                <li class="page-item" :class="{ disabled : thisPage == page+1 }" v-for="thisPage in Math.ceil(cards.length/pageLimit)">
+                  <a class="page-link" v-on:click="pageLink(thisPage)">
+                    {{ thisPage }}
+                  </a> 
+                </li>
+              <li class="page-item" :class="{ disabled : (page+1)*pageLimit >= cards.length }">
+                <a class="page-link" v-on:click="nextPage()">Next</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
 
-        <div class="row">
-          <div v-for="card in cards.slice(page*pageLimit, (page+1)*pageLimit)" class="col-lg-2 col-sm-12">
-            <div class="card p-2 m-1">
-              <img v-if="card.image_uris" :src="card.image_uris.normal" class="card-img-top" alt="...">
-              <img v-else-if="card.card_faces" :src="card.card_faces[0].image_uris.normal" class="card-img-top">
-              <div class="card-body">
-                <p class="card-text">{{ card.name }}</p>
-                <!-- <p v-if="card.oracle_text" class="card-text">{{ card.oracle_text }}</p>
-                <p v-else-if="card.card_faces" class="card-text">{{ card.card_faces[0].oracle_text }}</p> -->
+        <div class="container">
+          <div class="row">
+            <div v-for="card in cards.slice(page*pageLimit, (page+1)*pageLimit)" class="col-lg-2 col-sm-12 px-1">
+              <div class="card p-2 m-1">
+                <img v-if="card.image_uris" :src="card.image_uris.normal" class="card-img-top" alt="...">
+                <img v-else-if="card.card_faces" :src="card.card_faces[0].image_uris.normal" class="card-img-top">
+                <div class="card-body">
+                  <p class="card-text">{{ card.name }}</p>
+                  <!-- <p v-if="card.oracle_text" class="card-text">{{ card.oracle_text }}</p>
+                  <p v-else-if="card.card_faces" class="card-text">{{ card.card_faces[0].oracle_text }}</p> -->
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <!-- <ul>
-          <li v-for="card in cards.slice(page*pageLimit, (page+1)*pageLimit)">
-            <p v-on:click="alertDescription(card)">{{ card.name }}</p>
-            <img height="150px" v-if="card.image_uris" :src="card.image_uris.normal"/>
-            <img height="150px" v-else-if="card.card_faces" :src="card.card_faces[0].image_uris.normal"/>
-          </li>
-        </ul> -->
-        <button :disabled="page == 0" v-on:click="prevPage()">Previous</button>
-        <span>{{ page+1 }}/{{ Math.ceil(cards.length/pageLimit) }}</span>
-        <button :disabled="(page+1)*pageLimit >= cards.length" v-on:click="nextPage()">Next</button>
+        
+        <div v-show="cards.length > 20">
+          <nav aria-label="page navigation">
+            <ul class="pagination justify-content-center">
+              <li class="page-item" :class="{ disabled : page == 0 }">
+                <a class="page-link" v-on:click="prevPage()">Previous</a>
+              </li>
+                <li class="page-item" :class="{ disabled : thisPage == page+1 }" v-for="thisPage in Math.ceil(cards.length/pageLimit)">
+                  <a class="page-link" v-on:click="pageLink(thisPage)">
+                    {{ thisPage }}
+                  </a> 
+                </li>
+              <li class="page-item" :class="{ disabled : (page+1)*pageLimit >= cards.length }">
+                <a class="page-link" v-on:click="nextPage()">Next</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        
       </div>
-      <div v-show="loading == true">Loading...</div>
+
+      <div class="container">
+        <div v-show="loading == true">Loading...</div>
+      </div>
+
     </div>
   </body>
   
   <script>
+    Vue.component('v-select', VueSelect.VueSelect);
     new Vue({
       el: '#app',
       data () {
@@ -87,13 +144,27 @@
           page: 0,
           pageLimit: 20,
           params: {
-                color: 'blue',
-                set: 'war',
+                color: null,
+                set: null,
               },
           loading: true,
+          setList: [
+            { id: 'war', name: 'War of the Spark'}, 
+            { id: 'm20', name: 'Core Set 2020'},
+            { id: 'eld', name: 'Thrones of Eldraine'},
+          ],
+          colorList: [
+            { id: 'red', name: 'Red'},
+            { id: 'blue', name: 'Blue'},
+            { id: 'black', name: 'Black'},
+            { id: 'green', name: 'Green'},
+            { id: 'white', name: 'White'}
+          ]
         }
       },
-      mounted () {
+      mounted () { 
+        this.params.color = this.colorList[0]
+        this.params.set = this.setList[0]
         this.pullCards()
       },
       methods: {
@@ -102,7 +173,7 @@
           axios
             .get('https://api.scryfall.com/cards/search?', {
               params: {
-                q: 'set:'+this.params.set+' c:'+this.params.color,
+                q: 'set:'+this.params.set.id+' c:'+this.params.color.id,
               }
             })
             .then((response) => {
@@ -117,10 +188,13 @@
         prevPage() {
           this.page = this.page - 1
         },
+        pageLink(thisPage) {
+          this.page = thisPage - 1
+        },
         alertDescription(card) {
           console.log(card)
           alert(card.type_line)
-        }
+        },
       }
     })
   </script>
