@@ -28,17 +28,53 @@
 
   <body>
     <div id="app">
-      <button :disabled="page == 0" v-on:click="page = page - 1">Previous</button>
-      <span>{{ page+1 }}/{{ cards.length/5 }}</span>
-      <button :disabled="(page+1)*5 >= cards.length" v-on:click="page = page + 1">Next</button>
+      <select v-model="params.set">
+          <option disabled value="">Select a set</option>
+          <option value="eld">Thrones of Eldraine</option>
+          <option value="m20">Core Set 2020</option>
+          <option value="war">War of the Spark</option>
+        </select>
+      </select>
+      <select v-model="params.color">
+          <option disabled value="">Select a color</option>
+          <option value="red">Red</option>
+          <option value="black">Black</option>
+          <option value="blue">Blue</option>
+        </select>
+      </select>
+      <button v-on:click="pullCards()">Submit</button>
 
-      <ul>
-        <li v-for="card in cards.slice(page*5, (page+1)*5)">
-          <p>{{ card.name }}</p>
-          <img width="100px" v-if="card.image_uris" :src="card.image_uris.normal"/>
-          <img width="100px" v-if="card.card_faces" :src="card.card_faces[0].image_uris.normal"/>
-        </li>
-      </ul>
+      <div v-show="loading == false">
+
+        <button :disabled="page == 0" v-on:click="prevPage()">Previous</button>
+        <span>{{ page+1 }}/{{ Math.ceil(cards.length/pageLimit) }}</span>
+        <button :disabled="(page+1)*pageLimit >= cards.length" v-on:click="nextPage()">Next</button>
+
+        <div class="row">
+          <div v-for="card in cards.slice(page*pageLimit, (page+1)*pageLimit)" class="col-lg-2 col-sm-12">
+            <div class="card p-2 m-1">
+              <img v-if="card.image_uris" :src="card.image_uris.normal" class="card-img-top" alt="...">
+              <img v-else-if="card.card_faces" :src="card.card_faces[0].image_uris.normal" class="card-img-top">
+              <div class="card-body">
+                <p class="card-text">{{ card.name }}</p>
+                <!-- <p v-if="card.oracle_text" class="card-text">{{ card.oracle_text }}</p>
+                <p v-else-if="card.card_faces" class="card-text">{{ card.card_faces[0].oracle_text }}</p> -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- <ul>
+          <li v-for="card in cards.slice(page*pageLimit, (page+1)*pageLimit)">
+            <p v-on:click="alertDescription(card)">{{ card.name }}</p>
+            <img height="150px" v-if="card.image_uris" :src="card.image_uris.normal"/>
+            <img height="150px" v-else-if="card.card_faces" :src="card.card_faces[0].image_uris.normal"/>
+          </li>
+        </ul> -->
+        <button :disabled="page == 0" v-on:click="prevPage()">Previous</button>
+        <span>{{ page+1 }}/{{ Math.ceil(cards.length/pageLimit) }}</span>
+        <button :disabled="(page+1)*pageLimit >= cards.length" v-on:click="nextPage()">Next</button>
+      </div>
+      <div v-show="loading == true">Loading...</div>
     </div>
   </body>
   
@@ -48,16 +84,43 @@
       data () {
         return {
           cards: [],
-          page: 0
+          page: 0,
+          pageLimit: 20,
+          params: {
+                color: 'blue',
+                set: 'war',
+              },
+          loading: true,
         }
       },
       mounted () {
-        axios
-          .get('https://api.scryfall.com/cards/search?order=cmc&q=c%3Ared+pow%3D3')
-          .then((response) => {
-            console.log("Response", response)
-            this.cards = response.data.data
-          })
+        this.pullCards()
+      },
+      methods: {
+        pullCards() {
+          this.loading = true
+          axios
+            .get('https://api.scryfall.com/cards/search?', {
+              params: {
+                q: 'set:'+this.params.set+' c:'+this.params.color,
+              }
+            })
+            .then((response) => {
+              console.log("Response", response)
+              this.cards = response.data.data
+              setTimeout(()=>{this.loading = false},150)
+            })
+        },
+        nextPage() {
+          this.page = this.page + 1
+        },
+        prevPage() {
+          this.page = this.page - 1
+        },
+        alertDescription(card) {
+          console.log(card)
+          alert(card.type_line)
+        }
       }
     })
   </script>
