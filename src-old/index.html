@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
     <script src="https://unpkg.com/vue-select@3.0.0"></script>
     <link rel="stylesheet" href="https://unpkg.com/vue-select@3.0.0/dist/vue-select.css">
+    <script scr="https://unpkg.com/vue-router@2.0.0/dist/vue-router.js"></script>
 
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     
@@ -32,11 +33,21 @@
           }
       }
       .search-fields {
-        padding: 5px 5px 5px 5px;
+        padding: 10px 5px;
       }
-      @media screen and (min-width: 800px) {
+      @media screen and (min-width: 1200px) {
           .search-fields {
-            padding: 0 5px 0 5px;
+            padding: 0px 5px;
+          }
+      }
+      @media screen and (max-width: 1200px) {
+          .search-fields {
+            padding: 0px 5px;
+          }
+      }
+      @media screen and (min-width: 1200px) {
+          .vs__selected-options {
+            max-height: 28px;
           }
       }
       .color-select-img {
@@ -46,6 +57,15 @@
       .set-select-img {
         height: 20px;
         width: 20px;
+      }
+      /* Ellipsis for selected option */
+      .vs__selected-options, .vs__selected {
+        min-width: 0;
+      }
+      .vs__selected span {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
       }
       .vs__selected .color-select-img {
         height: 20px;
@@ -85,34 +105,34 @@
 
       <div class="container">
         <div class="row py-4">
-          <div class="col-md-6 col-s-12">
+          <div class="col-xl-6 col-12">
             <span class="h2">Magic: The Gathering Card Search</span>
           </div>
-          <div class="col-md-3 search-fields">
-            <v-select label="name" :options="setList" :clearable="false" v-model="params.set">
+          <div class="col-xl-3 col-12 search-fields">
+            <v-select label="name" :options="setList" :clearable="false" v-model="params.set" class="set-select">
               <template slot="option" slot-scope="option">
                 <img class="set-select-img" :src="option.logo"/>
                   {{ option.name }}
               </template>
               <template slot="selected-option" slot-scope="option">
                 <img class="set-select-img" :src="option.logo"/>
-                  {{ option.name }}
+                <span>{{ option.name }}</span>
               </template>
             </v-select>
           </div>
-          <div class="col-md-2 search-fields">
-            <v-select label="name" :options="colorList" :clearable="false" v-model="params.color">
+          <div class="col-xl-2 col-9 search-fields">
+            <v-select label="name" :options="colorList" :clearable="false" v-model="params.color" class="color-select">
               <template slot="option" slot-scope="option">
                 <img class="color-select-img" :src="option.logo"/>
-                  {{ option.name }}
+                {{ option.name }}
               </template>
               <template slot="selected-option" slot-scope="option">
                 <img class="color-select-img" :src="option.logo"/>
-                  {{ option.name }}
+                  <span>{{ option.name }}</span>
               </template>
             </v-select>
           </div>
-          <div class="col-md-1 search-fields">
+          <div class="col-xl-1 col-3 text-center search-fields search-button">
             <button type="button" class="btn btn-light" v-on:click="pullCards()">Submit</button>
           </div>
         </div>
@@ -183,6 +203,7 @@
   
   <script>
     Vue.component('v-select', VueSelect.VueSelect);
+    Vue.use(VueRouter)
     new Vue({
       el: '#app',
       data () {
@@ -207,8 +228,7 @@
       },
       mounted () { 
         this.pullSets().then(() => {
-          this.params.color = this.colorList[0]
-          this.params.set = this.setList[0]
+          this.setInitialParams()
           this.pullCards()
         })
         
@@ -231,6 +251,12 @@
             }
           })
         },
+        setInitialParams() {
+          randomColorIndex = Math.floor(Math.random() * Math.floor(4))
+          this.params.color = this.colorList[randomColorIndex]
+          randomSetIndex = Math.floor(Math.random() * Math.floor(16))
+          this.params.set = this.setList[randomSetIndex]
+        },
         pullCards() {
           this.loading = true
           this.page = 0
@@ -243,6 +269,10 @@
             .then((response) => {
               console.log("Response", response)
               this.cards = response.data.data
+              var URL = window.location.href;
+              console.log("Page URL: ", URL)
+              var sURLVariables = sPageURL.split('&')
+              console.log("Page URL variables: ", sURLVariables)
               setTimeout(()=>{this.loading = false},150)
             })
         },
