@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     
@@ -25,6 +27,38 @@
   </head>
 
   <body>
-    
+    <div id="app">
+      <button :disabled="page == 0" v-on:click="page = page - 1">Previous</button>
+      <span>{{ page+1 }}/{{ cards.length/5 }}</span>
+      <button :disabled="(page+1)*5 >= cards.length" v-on:click="page = page + 1">Next</button>
+
+      <ul>
+        <li v-for="card in cards.slice(page*5, (page+1)*5)">
+          <p>{{ card.name }}</p>
+          <img width="100px" v-if="card.image_uris" :src="card.image_uris.normal"/>
+          <img width="100px" v-if="card.card_faces" :src="card.card_faces[0].image_uris.normal"/>
+        </li>
+      </ul>
+    </div>
   </body>
+  
+  <script>
+    new Vue({
+      el: '#app',
+      data () {
+        return {
+          cards: [],
+          page: 0
+        }
+      },
+      mounted () {
+        axios
+          .get('https://api.scryfall.com/cards/search?order=cmc&q=c%3Ared+pow%3D3')
+          .then((response) => {
+            console.log("Response", response)
+            this.cards = response.data.data
+          })
+      }
+    })
+  </script>
 </html>
