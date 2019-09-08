@@ -28,6 +28,10 @@
         transform: scale(2) translate(0, 0);
         z-index: 1;
       }
+      /* img.split-layout:hover {
+        transform: scale(2) translate(0, 0) rotate(90deg);
+        z-index: 1; 
+      } */
       .search {
         padding: 0 5px 0 5px;
       }
@@ -43,7 +47,6 @@
       .page-buttons a.disabled {
         cursor: auto;
       }
-
 
     </style>
 
@@ -66,7 +69,7 @@
             <v-select label="name" :options="colorList" :clearable="false" v-model="params.color"></v-select>
           </div>
           <div class="col-md-1 search">
-            <button v-on:click="pullCards()">Submit</button>
+            <button type="button" class="btn btn-light" v-on:click="pullCards()">Submit</button>
           </div>
         </div>
       </div>
@@ -95,8 +98,8 @@
           <div class="row">
             <div v-for="card in cards.slice(page*pageLimit, (page+1)*pageLimit)" class="col-lg-2 col-sm-12 px-1">
               <div class="card p-2 m-1">
-                <img v-if="card.image_uris" :src="card.image_uris.normal" class="card-img-top" alt="...">
-                <img v-else-if="card.card_faces" :src="card.card_faces[0].image_uris.normal" class="card-img-top">
+                <img v-if="card.image_uris" :src="card.image_uris.normal" class="card-img-top" alt="card.name">
+                <img v-else-if="card.card_faces" :src="card.card_faces[0].image_uris.normal" class="card-img-top" alt="card.name">
                 <div class="card-body">
                   <p class="card-text">{{ card.name }}</p>
                   <!-- <p v-if="card.oracle_text" class="card-text">{{ card.oracle_text }}</p>
@@ -148,11 +151,7 @@
                 set: null,
               },
           loading: true,
-          setList: [
-            { id: 'war', name: 'War of the Spark'}, 
-            { id: 'm20', name: 'Core Set 2020'},
-            { id: 'eld', name: 'Thrones of Eldraine'},
-          ],
+          setList: [],
           colorList: [
             { id: 'red', name: 'Red'},
             { id: 'blue', name: 'Blue'},
@@ -163,11 +162,29 @@
         }
       },
       mounted () { 
-        this.params.color = this.colorList[0]
-        this.params.set = this.setList[0]
-        this.pullCards()
+        this.pullSets().then(() => {
+          this.params.color = this.colorList[0]
+          this.params.set = this.setList[0]
+          this.pullCards()
+        })
+        
       },
       methods: {
+        pullSets() {
+          return axios
+            .get('https://api.scryfall.com/sets',{}
+          )
+          .then((response) => {
+            this.sets = response.data.data
+            for (var i = 0; i < this.sets.length; i++) {
+              if (!(this.sets[i].parent_set_code)) {
+                this.setList.push(
+                  {id : this.sets[i].code, name : this.sets[i].name}
+                )
+              }
+            }
+          })
+        },
         pullCards() {
           this.loading = true
           axios
