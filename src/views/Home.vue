@@ -175,7 +175,7 @@ export default {
         console.log('after initial random params set...', this.params.color.name, this.params.set.name)
       }
     },
-    pullCards (setId, colorId) {
+    async pullCards (setId, colorId) {
       let params = null
       this.loading = true
       if (colorId === 'all') {
@@ -183,13 +183,16 @@ export default {
       } else {
         params = { q: 'set:' + setId + ' c:' + colorId }
       }
-      axios
-        .get('https://api.scryfall.com/cards/search?order=cmc&', { params }
-        )
-        .then((response) => {
-          this.cards = response.data.data
-          setTimeout(() => { this.loading = false }, 150)
-        })
+
+      let response = await axios.get('https://api.scryfall.com/cards/search?order=cmc&', { params })
+      this.cards = response.data.data
+
+      while (response.data.has_more === true) {
+        response = await axios.get(response.data.next_page)
+        this.cards.push(...response.data.data)
+      }
+
+      setTimeout(() => { this.loading = false }, 150)
     },
     submitSearch () {
       this.page = 0
