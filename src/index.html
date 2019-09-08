@@ -82,12 +82,12 @@
               <li class="page-item" :class="{ disabled : page == 0 }">
                 <a class="page-link" v-on:click="prevPage()">Previous</a>
               </li>
-                <li class="page-item" :class="{ disabled : thisPage == page+1 }" v-for="thisPage in Math.ceil(cards.length/pageLimit)">
+                <li class="page-item" :class="{ disabled : thisPage == page+1 }" v-for="thisPage in Math.ceil(cards.length/24)">
                   <a class="page-link" v-on:click="pageLink(thisPage)">
                     {{ thisPage }}
                   </a> 
                 </li>
-              <li class="page-item" :class="{ disabled : (page+1)*pageLimit >= cards.length }">
+              <li class="page-item" :class="{ disabled : (page+1)*24 >= cards.length }">
                 <a class="page-link" v-on:click="nextPage()">Next</a>
               </li>
             </ul>
@@ -96,7 +96,7 @@
 
         <div class="container">
           <div class="row">
-            <div v-for="card in cards.slice(page*pageLimit, (page+1)*pageLimit)" class="col-lg-2 col-sm-12 px-1">
+            <div v-for="card in cards.slice(page*24, (page+1)*24)" class="col-lg-2 col-sm-12 px-1">
               <div class="card p-2 m-1">
                 <img v-if="card.image_uris" :src="card.image_uris.normal" class="card-img-top" alt="card.name">
                 <img v-else-if="card.card_faces" :src="card.card_faces[0].image_uris.normal" class="card-img-top" alt="card.name">
@@ -116,12 +116,12 @@
               <li class="page-item" :class="{ disabled : page == 0 }">
                 <a class="page-link" v-on:click="prevPage()">Previous</a>
               </li>
-                <li class="page-item" :class="{ disabled : thisPage == page+1 }" v-for="thisPage in Math.ceil(cards.length/pageLimit)">
+                <li class="page-item" :class="{ disabled : thisPage == page+1 }" v-for="thisPage in Math.ceil(cards.length/24)">
                   <a class="page-link" v-on:click="pageLink(thisPage)">
                     {{ thisPage }}
                   </a> 
                 </li>
-              <li class="page-item" :class="{ disabled : (page+1)*pageLimit >= cards.length }">
+              <li class="page-item" :class="{ disabled : (page+1)*24 >= cards.length }">
                 <a class="page-link" v-on:click="nextPage()">Next</a>
               </li>
             </ul>
@@ -177,10 +177,12 @@
           .then((response) => {
             this.sets = response.data.data
             for (var i = 0; i < this.sets.length; i++) {
-              if (!(this.sets[i].parent_set_code)) {
-                this.setList.push(
-                  {id : this.sets[i].code, name : this.sets[i].name}
-                )
+              if (this.sets[i].set_type == 'core' || this.sets[i].set_type == 'expansion') {
+                if (!(this.sets[i].parent_set_code)) {
+                  this.setList.push(
+                    {id : this.sets[i].code, name : this.sets[i].name, logo : this.sets[i].icon_svg_uri}
+                  )
+                }
               }
             }
           })
@@ -188,7 +190,7 @@
         pullCards() {
           this.loading = true
           axios
-            .get('https://api.scryfall.com/cards/search?', {
+            .get('https://api.scryfall.com/cards/search?order=cmc&', {
               params: {
                 q: 'set:'+this.params.set.id+' c:'+this.params.color.id,
               }
