@@ -23,8 +23,21 @@
 
     <style>
       .card img:hover {
-        transform: scale(2) translate(0, 0);
-        z-index: 1;
+        transform: none;
+      }
+      @media screen and (min-width: 800px) {
+          .card img:hover {
+            transform: scale(2) translate(0, 0);
+            z-index: 1;
+          }
+      }
+      .search-fields {
+        padding: 5px 5px 5px 5px;
+      }
+      @media screen and (min-width: 800px) {
+          .search-fields {
+            padding: 0 5px 0 5px;
+          }
       }
       .color-select-img {
         height: 20px;
@@ -47,9 +60,6 @@
       img.split-layout:hover {
         transform: scale(2) translate(0, 0) rotate(90deg);
         z-index: 1; 
-      }
-      .search {
-        padding: 0 5px 0 5px;
       }
       .pagination .page-item {
         cursor: pointer;
@@ -78,7 +88,7 @@
           <div class="col-md-6 col-s-12">
             <span class="h2">Magic: The Gathering Card Search</span>
           </div>
-          <div class="col-md-3 search">
+          <div class="col-md-3 search-fields">
             <v-select label="name" :options="setList" :clearable="false" v-model="params.set">
               <template slot="option" slot-scope="option">
                 <img class="set-select-img" :src="option.logo"/>
@@ -90,7 +100,7 @@
               </template>
             </v-select>
           </div>
-          <div class="col-md-2 search">
+          <div class="col-md-2 search-fields">
             <v-select label="name" :options="colorList" :clearable="false" v-model="params.color">
               <template slot="option" slot-scope="option">
                 <img class="color-select-img" :src="option.logo"/>
@@ -102,7 +112,7 @@
               </template>
             </v-select>
           </div>
-          <div class="col-md-1 search">
+          <div class="col-md-1 search-fields">
             <button type="button" class="btn btn-light" v-on:click="pullCards()">Submit</button>
           </div>
         </div>
@@ -130,7 +140,7 @@
 
         <div class="container">
           <div class="row">
-            <div v-for="card in cards.slice(page*24, (page+1)*24)" class="col-lg-2 col-sm-12 px-1">
+            <div v-for="card in cards.slice(page*24, (page+1)*24)" class="col-lg-2 col-md-4 col-sm-6 col-6 px-1">
               <div class="card p-2 m-1">
                 <img v-if="card.image_uris" :src="card.image_uris.normal" :class="{ 'split-layout' : card.layout == 'split'}" class="card-img-top" alt="card.name">
                 <img v-else-if="card.card_faces" :src="card.card_faces[0].image_uris.normal" class="card-img-top" alt="card.name">
