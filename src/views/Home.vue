@@ -6,37 +6,44 @@
           <div class="col-xl-6 col-12">
             <span class="h2">Magic: The Gathering Card Search</span>
           </div>
-          <div class="col-xl-2 col-12 search-fields">
-            <v-select v-on:input="submitSearch()" label="name" :options="setList" :clearable="false" v-model="params.set" class="set-select">
-              <template slot="option" slot-scope="option">
-                <img class="set-select-img" :src="option.logo"/>
-                {{ option.name }}
-              </template>
-              <template slot="selected-option" slot-scope="option">
-                <img class="set-select-img" :src="option.logo"/>
-                <span>{{ option.name }}</span>
-              </template>
-            </v-select>
-          </div>
-          <div class="col-xl-2 col-9 search-fields">
-            <v-select v-on:input="submitSearch()" label="name" :options="colorList" :clearable="false" v-model="params.color" class="color-select">
-              <template slot="option" slot-scope="option">
-                <img class="color-select-img" :src="option.logo"/>
-                {{ option.name }}
-              </template>
-              <template slot="selected-option" slot-scope="option">
-                <img class="color-select-img" :src="option.logo"/>
-                  <span>{{ option.name }}</span>
-              </template>
-            </v-select>
-          </div>
-          <!-- <div class="col-xl-1 col-3 text-center search-fields search-button">
-            <button type="button" class="btn btn-light" v-on:click="submitSearch()">Submit</button>
-          </div> -->
-          <div class="col-xl-2 col-3 search-fields by-name">
-            <v-select placeholder="Search name" @search="fetchOptions" v-on:input="searchByName()" :options="nameList" v-model="nameSelected" :clearable="false" class="name-search">
-              <div slot="no-options">Enter at least two letters</div>
-            </v-select>
+          <div class="col-xl-6 col-12">
+            <div class="row">
+              <div class="col-xl-5 col-12 search-fields">
+                <v-select v-on:input="submitSearch()" label="name" :options="setList" :clearable="false" v-model="params.set" class="set-select">
+                  <template slot="option" slot-scope="option">
+                    <img class="set-select-img" :src="option.logo"/>
+                    {{ option.name }}
+                  </template>
+                  <template slot="selected-option" slot-scope="option">
+                    <img class="set-select-img vs__selected" :src="option.logo"/>
+                    <span class="vs__selected">{{ option.name }}</span>
+                  </template>
+                </v-select>
+              </div>
+              <div class="col-xl-3 col-6 search-fields">
+                <v-select v-on:input="submitSearch()" label="name" :options="colorList" :clearable="false" v-model="params.color" class="color-select">
+                  <template slot="option" slot-scope="option">
+                    <img class="color-select-img" :src="option.logo"/>
+                    {{ option.name }}
+                  </template>
+                  <template slot="selected-option" slot-scope="option">
+                    <img class="color-select-img vs__selected" :src="option.logo"/>
+                    <span class="vs__selected">{{ option.name }}</span>
+                  </template>
+                </v-select>
+              </div>
+              <!-- <div class="col-xl-1 col-3 text-center search-fields search-button">
+                <button type="button" class="btn btn-light" v-on:click="submitSearch()">Submit</button>
+              </div> -->
+              <div class="col-xl-4 col-6 search-fields by-name">
+                <v-select placeholder="Search name" @search="fetchOptions" v-on:input="searchByName()" :options="nameList" v-model="nameSelected" :clearable="false" class="name-search">
+                  <div slot="no-options">Enter at least two letters</div>
+                  <template slot="selected-option" slot-scope="option">
+                    <span class="vs__selected">{{ option.label }}</span>
+                  </template>
+                </v-select>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -62,17 +69,14 @@
         </div>
 
         <div class="container">
-          <div class="row">
+          <div v-if="cards.length > 1" class="row">
             <div v-for="card in cards.slice(page*24, (page+1)*24)" :key="card.id" class="col-lg-2 col-md-4 col-sm-6 col-6 px-1">
-              <div class="card p-2 m-1">
-                <img v-if="card.image_uris" :src="card.image_uris.normal" :class="{ 'split-layout' : card.layout === 'split'}" class="card-img-top" alt="card.name">
-                <img v-else-if="card.card_faces" :src="card.card_faces[0].image_uris.normal" class="card-img-top" alt="card.name">
-                <div class="card-body">
-                  <p class="card-text">{{ card.name }}</p>
-                  <!-- <p v-if="card.oracle_text" class="card-text">{{ card.oracle_text }}</p>
-                  <p v-else-if="card.card_faces" class="card-text">{{ card.card_faces[0].oracle_text }}</p> -->
-                </div>
-              </div>
+              <mtg-card :card="card"></mtg-card>
+            </div>
+          </div>
+          <div v-if="cards.length === 1" class="row justify-content-center">
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-10 col-10 px-1">
+              <mtg-card :card="cards[0]"></mtg-card>
             </div>
           </div>
         </div>
@@ -105,10 +109,13 @@
 
 <script>
 // @ is an alias to /src
-// import HelloWorld from '@/components/HelloWorld.vue'
+import mtgCard from '@/components/mtgCard.vue'
 
 export default {
   name: 'home',
+  components: {
+    'mtg-card': mtgCard
+  },
   data () {
     return {
       cards: [],
@@ -135,7 +142,11 @@ export default {
   mounted () {
     this.pullSets().then(() => {
       this.setInitialParams()
-      this.pullCards(this.params.set.id, this.params.color.id)
+      if (this.nameSelected) {
+        this.searchByName(this.$route.query.name)
+      } else {
+        this.pullCards(this.params.set.id, this.params.color.id)
+      }
     })
   },
   methods: {
@@ -158,6 +169,9 @@ export default {
     },
     setInitialParams () {
       console.log('before params set...', this.$route.query)
+      if (this.$route.query.name) {
+        this.nameSelected = this.$route.query.name
+      }
       if (this.$route.query.color && this.$route.query.set) {
         if (this.$route.query.page) {
           this.page = this.$route.query.page - 1
@@ -183,6 +197,9 @@ export default {
       }
     },
     async pullCards (setId, colorId) {
+      if (this.nameSelected) {
+        this.nameSelected = null
+      }
       let params = null
       this.loading = true
       if (colorId === 'all') {
@@ -226,6 +243,7 @@ export default {
         })
     },
     searchByName () {
+      this.loading = true
       console.log('search by name function...', this.nameSelected)
       return axios
         .get('https://api.scryfall.com/cards/named?', {
@@ -233,7 +251,12 @@ export default {
         })
         .then((response) => {
           this.cards = [response.data]
+          if (this.$route.query.name !== this.cards[0].name) {
+            this.$router.push({ query: { 'name': this.cards[0].name } })
+          }
+          console.log('add card name to query string...', this.cards[0].name)
           console.log('return searched by name card... ', this.cards)
+          this.loading = false
         })
     },
     nextPage () {
@@ -279,11 +302,6 @@ export default {
         max-height: 28px;
       }
   }
-  // @media screen and (min-width: 1200px) {
-  //     .color-select {
-  //       max-width: 130px;
-  //     }
-  // }
   .color-select-img {
     height: 20px;
     width: 20px;
@@ -291,6 +309,19 @@ export default {
   .set-select-img {
     height: 20px;
     width: 20px;
+  }
+  /* THIS IS A BIG HACK: We need to have .vs__selected on all of our elements
+  within the selected option slot for the dropdown to work. So we need to remove
+  the styles on these nested vs__selected elements else we get double margins/padding/etc */
+  .vs__selected .vs__selected {
+    border: none;
+    margin: 0;
+    padding: 0;
+    display: inline;
+  }
+  .vs--open .vs__selected .vs__selected {
+    position: static;
+    opacity: 1;
   }
   /* Ellipsis for selected option */
   .vs__selected-options, .vs__selected {
