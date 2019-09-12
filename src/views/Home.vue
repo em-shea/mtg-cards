@@ -69,12 +69,12 @@
         </div>
 
         <div class="container">
-          <div v-if="cards.length > 1" class="row">
+          <div v-if="cards.length > 1" class="row multi-card">
             <div v-for="card in cards.slice(page*24, (page+1)*24)" :key="card.id" class="col-lg-2 col-md-4 col-sm-6 col-6 px-1">
               <mtg-card :card="card"></mtg-card>
             </div>
           </div>
-          <div v-if="cards.length === 1" class="row justify-content-center">
+          <div v-if="cards.length === 1" class="row single-card justify-content-center">
             <div class="col-xl-2 col-lg-3 col-md-4 col-sm-10 col-10 px-1">
               <mtg-card :card="cards[0]"></mtg-card>
             </div>
@@ -280,15 +280,6 @@ export default {
 </script>
 
 <style lang="scss">
-  .card img:hover {
-    transform: none;
-  }
-  @media screen and (min-width: 800px) {
-      .card img:hover {
-        transform: scale(2) translate(0, 0);
-        z-index: 1;
-      }
-  }
   .search-fields {
     padding: 10px 5px;
   }
@@ -341,10 +332,6 @@ export default {
     height: 20px;
     width: 20px;
     margin: 0 10px 0 10px;
-  }
-  img.split-layout:hover {
-    transform: scale(2) translate(0, 0) rotate(90deg);
-    z-index: 1;
   }
   .pagination .page-item {
     cursor: pointer;
