@@ -73,6 +73,9 @@ export default {
       transform: scale(2) rotate(0deg);
       z-index: 2;
     }
+    img.flip:hover {
+      cursor: pointer;
+    }
     img.flip.is-clicked:hover {
       cursor: pointer;
       transform: scale(2) rotate(180deg);
