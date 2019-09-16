@@ -262,14 +262,17 @@ export default {
     nextPage () {
       this.page = this.page + 1
       this.$router.push({ query: { 'color': this.params.color.id, 'set': this.params.set.id, 'page': this.page + 1 } })
+      window.scrollTo(0, 0)
     },
     prevPage () {
       this.page = this.page - 1
       this.$router.push({ query: { 'color': this.params.color.id, 'set': this.params.set.id, 'page': this.page + 1 } })
+      window.scrollTo(0, 0)
     },
     pageLink (thisPage) {
       this.page = thisPage - 1
       this.$router.push({ query: { 'color': this.params.color.id, 'set': this.params.set.id, 'page': this.page + 1 } })
+      window.scrollTo(0, 0)
     },
     alertDescription (card) {
       console.log(card)
@@ -280,6 +283,9 @@ export default {
 </script>
 
 <style lang="scss">
+  .single-card {
+    padding-top: 30px;
+  }
   .search-fields {
     padding: 10px 5px;
   }
@@ -288,10 +294,8 @@ export default {
         padding: 0px 5px;
       }
   }
-  @media screen and (min-width: 1200px) {
-      .vs__selected-options {
-        max-height: 28px;
-      }
+  .vs__selected-options {
+    max-height: 28px;
   }
   .color-select-img {
     height: 20px;
