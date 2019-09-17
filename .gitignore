@@ -2,6 +2,7 @@
 node_modules
 /dist
 vuecli
+vue-README.md
 
 # local env files
 .env.local
