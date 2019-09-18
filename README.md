@@ -22,5 +22,6 @@ Examples:
 
 This is a single page web app built with Vue.js. It uses [Scryfall's API](https://scryfall.com/docs/api) to return card data.
 
-## Screenshots
+## Screenshot
 
+![desktop screenshot](https://misc-static-es.s3.amazonaws.com/fullscreen.PNG)
