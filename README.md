@@ -1,5 +1,7 @@
 # Magic: The Gathering Card Search 🧙
 
+https://mtg.emshea.com
+
 ## About
 
 This web app allows you to search MTG cards by set and mana color, or for individual cards by name.
